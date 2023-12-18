@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<script>
+    const tabTemplate = `<tr id="art-:id"
+                    class="odd:bg-white odd:dark:bg-gray-900 even:bg-gray-50 even:dark:bg-gray-800 border-b dark:border-gray-700">
+                    <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                        <input type="text" id="art-name-:id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Article n°:id">
+                    </th>
+                    <td class="px-6 py-4">
+                        <input type="number" oninput="recalc()" id="art-price-:id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="prix">
+                    </td>
+                    <th scope="col" class="px-6 py-3">
+                        <button onclick="delElement(:id)" class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 click:border-blue-500 rounded">-</button>
+                    </th>
+                </tr>`;
+</script>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Liste de course</title>
+</head>
+
+<body class="bg-cyan-900 p-1 flex flex-col">
+    <h1 class="text-3xl font-bold text-center text-white mb-3 mt-2">Liste de course</h1>
+
+
+    <div class="relative overflow-x-auto shadow-md rounded-lg">
+        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                <tr>
+                    <th scope="col" class="px-6 py-3">
+                        Produit
+                    </th>
+                    <th scope="col" class="px-6 py-3">
+                        Prix
+                    </th>
+                    <th scope="col" class="px-6 py-3"></th>
+                </tr>
+            </thead>
+            <tbody id="tableau">
+                <!-- Ici on met les bails -->
+            </tbody>
+        </table>
+    </div>
+
+    <button onclick="addElement()"
+        class="bg-blue-500 hover:bg-blue-400 text-white font-bold py-2 px-4 border-b-4 border-blue-700 click:border-blue-500 rounded m-5">+</button>
+
+    <div class="text-gray-900 bg-gradient-to-r from-lime-200 via-lime-400 to-lime-500 focus:ring-4 focus:outline-none focus:ring-lime-300 dark:focus:ring-lime-800 shadow-lg shadow-lime-500/50 dark:shadow-lg dark:shadow-lime-800/80 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2 ml-24 mr-24">
+        Total: <span id="total">0,0€</span>
+</div>
+
+   <div class="flex mt-10">
+    <button onclick="saveVal()" class="text-white bg-blue-700 :bg-blue-800hover focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ml-5 mr-5">Sauvegarder</button>
+    <button onclick="loadVal()" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 ml-5 mr-5">Charger</button>
+   </div> 
+
+   <p class="text-white text-center mt-5 mx-5">Petite appli pour faire une liste de courses en vitesse, codée en moins de 2h avec Tailwind car pas grand-chose à faire d'autre. (la page est surtout adaptée à la vue mobile)</p>
+</body>
+
+<script>
+    var objets = new Array() //un hash avec oui ou non si ok
+
+    function saveOldValues() {
+        old_val = Array();
+        for (i = 0; i < objets.length; i++) {
+            if (objets[i] == true) {
+                old_val[i] = [document.getElementById("art-name-" + i.toString()).value, document.getElementById("art-price-" + i.toString()).value]
+            } else {old_val[i] = false;}
+        }
+        return old_val
+    }
+
+    function restoreOldValues(old_val) {
+        for(i = 0; i < old_val.length; i++) {
+            if(old_val[i] != false) {
+                document.getElementById("art-name-" + i.toString()).value = old_val[i][0]
+                document.getElementById("art-price-" + i.toString()).value = old_val[i][1]
+            }
+        }
+    }
+
+    function createNewTab() {
+        var tab = tabTemplate
+        //crée un nouvel objet dans le tableau
+        var cur = objets.length
+        objets[cur] = true
+        tab = tab.replaceAll(":id", cur.toString())
+        document.getElementById("tableau").innerHTML += tab
+    }
+    function addElement() {
+        //Sauvegarde les anciennes valeurs
+        var old_val = saveOldValues()
+        console.log(old_val)
+
+        createNewTab()
+
+        restoreOldValues(old_val)
+    }
+
+    function delElement(elem) {
+        console.log("Supression " + "art-" + elem.toString())
+        objets[elem] = false;
+        document.getElementById("art-" + elem.toString()).remove()
+        recalc()
+    }
+
+    function recalc() {
+        var tot = 0.0
+        for (i = 0; i < objets.length; i++) {
+            if (objets[i] == true) {
+                //calcul
+                var a = document.getElementById("art-price-" + i.toString()).value;
+                a = a.replaceAll(",", ".") //problème de virgule
+                a_f = parseFloat(a);
+                if (!isNaN(a_f)) {
+                    tot += a_f
+                }
+
+
+            }
+        }
+        document.getElementById("total").innerText = tot.toString().replaceAll(".", ",") + "€";
+
+    }
+
+    function saveVal() {
+        alert(JSON.stringify(saveOldValues()));
+    }
+
+    function loadVal() {
+        //nettoie 
+        objets = new Array();
+        document.getElementById("tableau").innerHTML = ""
+
+
+        var val = prompt("Tableau : ");
+        var tab = JSON.parse(val);
+        console.log(val)
+        console.log(tab)
+
+        console.log(tab.length)
+        for(i = 0; i < tab.length; i++) {createNewTab()}
+        //Cache les élements non désires 
+        for(i = 0; i < tab.length; i++) {if(tab[i] == false) {delElement(i)}}
+        
+        restoreOldValues(tab)
+        recalc()
+
+
+    }
+</script>
+
+</html>
